@@ -31,7 +31,7 @@ public:
     int close() noexcept;
 
     template <typename... Args>
-    statement prepare(const char* query, Args... args);
+    statement prepare(const char* query, const Args&... args);
     statement prepare(const char* query);
     int execute(const char* query);
 
@@ -45,7 +45,7 @@ private:
 }; // database
 
 template <typename... Args>
-statement database::prepare(const char* query, Args... args)
+statement database::prepare(const char* query, const Args&... args)
 {
     statement stmt = prepare(query);
     stmt.bind(args...);

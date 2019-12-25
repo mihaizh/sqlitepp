@@ -10,13 +10,28 @@
 namespace sqlitepp
 {
 
+struct skip_arg
+{
+};
+
+struct const_blob
+{
+    const void* ptr;
+    size_t length;
+};
+
+struct blob
+{
+    void* ptr;
+    size_t length;
+};
+
 namespace detail
 {
     int bind(sqlite3_stmt* stmt, int index, int32_t value) noexcept;
     int bind(sqlite3_stmt* stmt, int index, int64_t value) noexcept;
     int bind(sqlite3_stmt* stmt, int index, double value) noexcept;
     int bind(sqlite3_stmt* stmt, int index, const char* value) noexcept;
-    int bind(sqlite3_stmt* stmt, int index, std::string_view value) noexcept;
     int bind(sqlite3_stmt* stmt, int index, const std::string& value) noexcept;
     int bind(sqlite3_stmt* stmt, int index, const std::vector<char>& value) noexcept;
     int bind(sqlite3_stmt* stmt, int index, const void* src_ptr, size_t length) noexcept;
@@ -46,23 +61,64 @@ namespace detail
         std::is_void<T>::value>
     {
     };
+
+    template <typename Arg>
+    typename std::enable_if<std::is_same<Arg, std::nullptr_t>::value, int>::type
+        bind_if(sqlite3_stmt* stmt, int index, const Arg& arg)
+    {
+        return sqlite3_bind_null(stmt, index);
+    }
+
+    template <typename Arg>
+    typename std::enable_if<std::is_same<Arg, const_blob>::value ||
+                            std::is_same<Arg, blob>::value>::type
+        bind_if(sqlite3_stmt* stmt, int index, const Arg& arg)
+    {
+        return bind(stmt, index, arg.ptr, arg.length);
+    }
+
+    template <typename Arg>
+    typename std::enable_if<std::is_same<Arg, skip_arg>::value, int>::type
+        bind_if(sqlite3_stmt* stmt, int index, const Arg& arg)
+    {
+        return SQLITE_OK; // skip this
+    }
+
+    template <typename Arg>
+    typename std::enable_if<!std::is_same<Arg, skip_arg>::value, int>::type
+        bind_if(sqlite3_stmt* stmt, int index, const Arg& arg)
+    {
+        return bind(stmt, index, arg);
+    }
+
+    template <typename Arg>
+    typename std::enable_if<std::is_same<Arg, std::nullptr_t>::value, int>::type
+        read_if(sqlite3_stmt* stmt, int index, Arg& arg)
+    {
+        return SQLITE_OK; // do not read into nullptr
+    }
+
+    template <typename Arg>
+    typename std::enable_if<std::is_same<Arg, blob>::value>::type
+        read_if(sqlite3_stmt* stmt, int index, Arg& arg)
+    {
+        return read(stmt, index, arg.ptr, arg.length);
+    }
+
+    template <typename Arg>
+    typename std::enable_if<std::is_same<Arg, skip_arg>::value, int>::type
+        read_if(sqlite3_stmt* stmt, int index, Arg& arg)
+    {
+        return SQLITE_OK; // skip this
+    }
+
+    template <typename Arg>
+    typename std::enable_if<!std::is_same<Arg, skip_arg>::value, int>::type
+        read_if(sqlite3_stmt* stmt, int index, Arg& arg)
+    {
+        return read(stmt, index, arg);
+    }
 }
-
-struct skip_arg
-{
-};
-
-struct const_blob
-{
-    const void* ptr;
-    size_t length;
-};
-
-struct blob
-{
-    void* ptr;
-    size_t length;
-};
 
 class statement
 {
@@ -82,7 +138,6 @@ public:
     int bind_at(int index, const Arg& arg) noexcept;
 
     int bind_text(int index, const char* text) noexcept;
-    int bind_text(int index, std::string_view text) noexcept;
     int bind_text(int index, const std::string& text) noexcept;
     int bind_blob(int index, const std::vector<char>& value) noexcept;
     int bind_blob(int index, const void* ptr, size_t length) noexcept;
@@ -160,22 +215,7 @@ int statement::bind_at(int index, const Arg& arg) noexcept
         "It is recommended to use std::vector<char> to bind blobs. You can, "
         "however, pass 'const_blob' or 'blob' to bind a void type.");
 
-    int code = SQLITE_OK;
-    if constexpr (std::is_same_v<Arg, std::nullptr_t>)
-    {
-        code = sqlite3_bind_null(m_handle, m_bind_index);
-    }
-    if constexpr (std::is_same_v<Arg, const_blob> ||
-                  std::is_same_v<Arg, blob>)
-    {
-        code = detail::bind(m_handle, m_bind_index, arg.ptr, arg.length);
-    }
-    else if constexpr (!std::is_same_v<Arg, skip_arg>)
-    {
-        code = detail::bind(m_handle, m_bind_index, arg);
-    }
-
-    return code;
+    return detail::bind_if<Arg>(m_handle, m_bind_index, arg);
 }
 
 template <typename Arg>
@@ -231,21 +271,7 @@ int statement::read_row_at(int index, Arg& arg) noexcept
     static_assert(!detail::is_c_str<Arg>::value,
         "Text needs to be read into a std::string type.");
 
-    int code = SQLITE_OK;
-    if constexpr (std::is_same_v<Arg, std::nullptr_t>)
-    {
-        // Skip nullptr
-    }
-    else if constexpr (std::is_same_v<Arg, blob>)
-    {
-        code = detail::read(m_handle, m_read_index, arg.ptr, arg.length);
-    }
-    else if constexpr (!std::is_same_v<Arg, skip_arg>)
-    {
-        code = detail::read(m_handle, m_read_index, arg);
-    }
-
-    return code;
+    return detail::read_if<Arg>(m_handle, m_read_index, arg);
 }
 
 template <typename Arg>

@@ -25,11 +25,6 @@ namespace detail
         return sqlite3_bind_text(stmt, index, value, (int)strlen(value), SQLITE_STATIC);
     }
 
-    int bind(sqlite3_stmt* stmt, int index, std::string_view value) noexcept
-    {
-        return sqlite3_bind_text(stmt, index, value.data(), (int)value.length(), SQLITE_STATIC);
-    }
-
     int bind(sqlite3_stmt* stmt, int index, const std::string& value) noexcept
     {
         return sqlite3_bind_text(stmt, index, value.data(), (int)value.length(), SQLITE_STATIC);
@@ -134,11 +129,6 @@ statement& statement::operator=(statement&& other) noexcept
 }
 
 int statement::bind_text(int index, const char* text) noexcept
-{
-    return detail::bind(m_handle, index, text);
-}
-
-int statement::bind_text(int index, std::string_view text) noexcept
 {
     return detail::bind(m_handle, index, text);
 }
