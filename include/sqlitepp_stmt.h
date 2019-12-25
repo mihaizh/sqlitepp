@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <cstring>
 #include "sqlite3_inc.h"
 
 namespace sqlitepp
@@ -227,14 +228,13 @@ int statement::read_row_at(int index, Arg& arg) noexcept
         "You can't read void types. There's no information about their size. "
         "Use std::vector<char> to read blobs. Check 'read_blob' too.");
 
+    static_assert(!detail::is_c_str<Arg>::value,
+        "Text needs to be read into a std::string type.");
+
     int code = SQLITE_OK;
     if constexpr (std::is_same_v<Arg, std::nullptr_t>)
     {
         // Skip nullptr
-    }
-    else if constexpr (detail::is_c_str<Arg>::value)
-    {
-        static_assert(false, "Text needs to be read into a std::string type.");
     }
     else if constexpr (std::is_same_v<Arg, blob>)
     {
