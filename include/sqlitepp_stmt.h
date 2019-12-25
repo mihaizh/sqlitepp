@@ -63,57 +63,57 @@ namespace detail
     };
 
     template <typename Arg>
-    typename std::enable_if<std::is_same_v<Arg, std::nullptr_t>, int>::type
+    typename std::enable_if<std::is_same<Arg, std::nullptr_t>::value, int>::type
         bind_if(sqlite3_stmt* stmt, int index, const Arg& arg)
     {
         return sqlite3_bind_null(stmt, index);
     }
 
     template <typename Arg>
-    typename std::enable_if<std::is_same_v<Arg, const_blob> ||
-                            std::is_same_v<Arg, blob>>::type
+    typename std::enable_if<std::is_same<Arg, const_blob>::value ||
+                            std::is_same<Arg, blob>::value>::type
         bind_if(sqlite3_stmt* stmt, int index, const Arg& arg)
     {
         return bind(stmt, index, arg.ptr, arg.length);
     }
 
     template <typename Arg>
-    typename std::enable_if<std::is_same_v<Arg, skip_arg>, int>::type
+    typename std::enable_if<std::is_same<Arg, skip_arg>::value, int>::type
         bind_if(sqlite3_stmt* stmt, int index, const Arg& arg)
     {
         return SQLITE_OK; // skip this
     }
 
     template <typename Arg>
-    typename std::enable_if<!std::is_same_v<Arg, skip_arg>, int>::type
+    typename std::enable_if<!std::is_same<Arg, skip_arg>::value, int>::type
         bind_if(sqlite3_stmt* stmt, int index, const Arg& arg)
     {
         return bind(stmt, index, arg);
     }
 
     template <typename Arg>
-    typename std::enable_if<std::is_same_v<Arg, std::nullptr_t>, int>::type
+    typename std::enable_if<std::is_same<Arg, std::nullptr_t>::value, int>::type
         read_if(sqlite3_stmt* stmt, int index, Arg& arg)
     {
         return SQLITE_OK; // do not read into nullptr
     }
 
     template <typename Arg>
-    typename std::enable_if<std::is_same_v<Arg, blob>>::type
+    typename std::enable_if<std::is_same<Arg, blob>::value>::type
         read_if(sqlite3_stmt* stmt, int index, Arg& arg)
     {
         return read(stmt, index, arg.ptr, arg.length);
     }
 
     template <typename Arg>
-    typename std::enable_if<std::is_same_v<Arg, skip_arg>, int>::type
+    typename std::enable_if<std::is_same<Arg, skip_arg>::value, int>::type
         read_if(sqlite3_stmt* stmt, int index, Arg& arg)
     {
         return SQLITE_OK; // skip this
     }
 
     template <typename Arg>
-    typename std::enable_if<!std::is_same_v<Arg, skip_arg>, int>::type
+    typename std::enable_if<!std::is_same<Arg, skip_arg>::value, int>::type
         read_if(sqlite3_stmt* stmt, int index, Arg& arg)
     {
         return read(stmt, index, arg);
