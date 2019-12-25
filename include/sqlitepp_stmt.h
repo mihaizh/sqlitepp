@@ -169,9 +169,14 @@ public:
 
     int finalize() noexcept;
 
-    bool ok() noexcept
+    bool ok() const noexcept
     {
         return m_handle != nullptr;
+    }
+
+    int execution_status() const noexcept
+    {
+        return m_exec_status;
     }
 
 private:
