@@ -1,0 +1,32 @@
+language: cpp
+
+jobs:
+  include:
+    - name: Linux Build
+      os: linux
+      dist: bionic
+      
+      language: cpp
+      
+      before_script:
+        - cd ${TRAVIS_BUILD_DIR}
+        - mkdir build && cd build
+        - cmake ..
+        
+      script:
+        - make && make test
+      
+      
+    - name: Windows Build
+      os: windows
+      language: cpp
+
+      before_script:
+        - choco install visualstudio2019buildtools --package-parameters "--includeRecommended --includeOptional"
+        - choco install visualstudio2019-workload-vctools
+        - cd ${TRAVIS_BUILD_DIR}
+        - mkdir build && cd build
+        - cmake ..
+
+      script:
+        - cmd.exe /C 'call "C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/Common7/Tools/VsDevCmd.bat" && msbuild.exe sqlitepp.sln /t:Build /p:Configuration=Release;Platform=x64'
