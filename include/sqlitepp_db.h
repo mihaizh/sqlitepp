@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <string>
-#include <system_error>
 #include <cassert>
 
 #include "sqlite3_inc.h"
