@@ -148,32 +148,32 @@ int statement::bind_blob(int index, const void* ptr, size_t length)
     return detail::bind(m_handle, index, ptr, length);
 }
 
-int statement::get_argument_index(const char* name)
+int statement::get_argument_index(const char* name) const
 {
     return sqlite3_bind_parameter_index(m_handle, name);
 }
 
-int statement::read_text(int index, std::string& text)
+int statement::read_text(int index, std::string& text) const
 {
     return detail::read(m_handle, index, text);
 }
 
-int statement::read_blob(int index, std::vector<char>& value)
+int statement::read_blob(int index, std::vector<char>& value) const
 {
     return detail::read(m_handle, index, value);
 }
 
-int statement::read_blob(int index, void* ptr, size_t length)
+int statement::read_blob(int index, void* ptr, size_t length) const
 {
     return detail::read(m_handle, index, ptr, length);
 }
 
-int statement::get_column_count()
+int statement::get_column_count() const
 {
     return sqlite3_column_count(m_handle);
 }
 
-const char* statement::get_column_name(int index)
+const char* statement::get_column_name(int index) const
 {
     return sqlite3_column_name(m_handle, index);
 }

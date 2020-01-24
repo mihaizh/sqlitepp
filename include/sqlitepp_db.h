@@ -30,9 +30,9 @@ public:
     int close();
 
     template <typename... Args>
-    statement prepare(const char* query, const Args&... args);
-    statement prepare(const char* query);
-    int execute(const char* query);
+    statement prepare(const char* query, const Args&... args) const;
+    statement prepare(const char* query) const;
+    int execute(const char* query) const;
 
     int toggle_extended_result_codes();
     bool is_using_extended_result_codes() const;
@@ -44,7 +44,7 @@ private:
 }; // database
 
 template <typename... Args>
-statement database::prepare(const char* query, const Args&... args)
+statement database::prepare(const char* query, const Args&... args) const
 {
     statement stmt = prepare(query);
     stmt.bind(args...);

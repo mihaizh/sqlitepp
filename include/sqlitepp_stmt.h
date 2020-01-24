@@ -144,7 +144,7 @@ public:
     template <typename Arg>
     int bind_blob(int index, const Arg& value);
 
-    int get_argument_index(const char* name);
+    int get_argument_index(const char* name) const;
 
     int execute();
 
@@ -152,20 +152,20 @@ public:
     bool read(Args&... args);
 
     template <typename Arg, typename... Args>
-    int read_row(Arg& arg, Args&... args);
+    int read_row(Arg& arg, Args&... args) const;
     template <typename Arg>
-    int read_row(Arg& arg);
+    int read_row(Arg& arg) const;
     template <typename Arg>
-    int read_row_at(int index, Arg& arg);
+    int read_row_at(int index, Arg& arg) const;
 
-    int read_text(int index, std::string& text);
-    int read_blob(int index, std::vector<char>& value);
-    int read_blob(int index, void* ptr, size_t length);
+    int read_text(int index, std::string& text) const;
+    int read_blob(int index, std::vector<char>& value) const;
+    int read_blob(int index, void* ptr, size_t length) const;
     template <typename Arg>
-    int read_blob(int index, Arg& value);
+    int read_blob(int index, Arg& value) const;
 
-    int get_column_count();
-    const char* get_column_name(int index);
+    int get_column_count() const;
+    const char* get_column_name(int index) const;
 
     int finalize();
 
@@ -184,7 +184,7 @@ private:
 
     sqlite3_stmt* m_handle = nullptr;
     int m_bind_index = 0;
-    int m_read_index = 0;
+    mutable int m_read_index = 0;
 
     int m_exec_status = SQLITE_OK;
 
@@ -249,7 +249,7 @@ bool statement::read(Args&... args)
 }
 
 template <typename Arg, typename... Args>
-int statement::read_row(Arg& arg, Args&... args)
+int statement::read_row(Arg& arg, Args&... args) const
 {
     ++m_read_index;
     auto code = read_row_at(m_read_index, arg);
@@ -260,14 +260,14 @@ int statement::read_row(Arg& arg, Args&... args)
 }
 
 template <typename Arg>
-int statement::read_row(Arg& arg)
+int statement::read_row(Arg& arg) const
 {
     ++m_read_index;
     return read_row_at(m_read_index, arg);
 }
 
 template <typename Arg>
-int statement::read_row_at(int index, Arg& arg)
+int statement::read_row_at(int index, Arg& arg) const
 {
     static_assert(!detail::is_void<Arg>::value,
         "You can't read void types. There's no information about their size. "
@@ -280,7 +280,7 @@ int statement::read_row_at(int index, Arg& arg)
 }
 
 template <typename Arg>
-int statement::read_blob(int index, Arg& value)
+int statement::read_blob(int index, Arg& value) const
 {
     return detail::read(m_handle, index, reinterpret_cast<void*>(&value), sizeof(Arg));
 }

@@ -70,7 +70,7 @@ int database::close()
     return SQLITE_OK;
 }
 
-statement database::prepare(const char* query)
+statement database::prepare(const char* query) const
 {
     statement stmt;
     const char* query_tail = nullptr;
@@ -80,7 +80,7 @@ statement database::prepare(const char* query)
     return stmt;
 }
 
-int database::execute(const char* query)
+int database::execute(const char* query) const
 {
     return sqlite3_exec(m_handle, query, nullptr, nullptr, nullptr);
 }
