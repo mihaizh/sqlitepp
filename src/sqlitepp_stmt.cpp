@@ -112,7 +112,11 @@ namespace detail
 }
 
 statement::statement(statement&& other) noexcept
-    : m_handle(other.m_handle)
+    : m_handle(other.m_handle),
+    m_bind_index(other.m_bind_index),
+    m_read_index(other.m_read_index),
+    m_exec_status(other.m_exec_status),
+    m_exec_before_next_row(other.m_exec_before_next_row)
 {
     other.m_handle = nullptr;
 }
@@ -123,6 +127,11 @@ statement& statement::operator=(statement&& other) noexcept
     {
         m_handle = other.m_handle;
         other.m_handle = nullptr;
+
+        m_bind_index = other.m_bind_index;
+        m_read_index = other.m_read_index;
+        m_exec_status = other.m_exec_status;
+        m_exec_before_next_row = other.m_exec_before_next_row;
     }
 
     return *this;

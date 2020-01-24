@@ -24,6 +24,8 @@ database::database(const std::string& db, int& result)
 }
 
 database::database(database&& other) noexcept
+    : m_handle(other.m_handle),
+    m_extended_result_codes(other.m_extended_result_codes)
 {
     other.m_handle = nullptr;
 }
@@ -34,6 +36,8 @@ database& database::operator=(database&& other) noexcept
     {
         m_handle = other.m_handle;
         other.m_handle = nullptr;
+
+        m_extended_result_codes = other.m_extended_result_codes;
     }
 
     return *this;
