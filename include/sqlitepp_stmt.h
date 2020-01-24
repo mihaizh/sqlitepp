@@ -106,14 +106,14 @@ namespace detail
     }
 
     template <typename Arg>
-    typename std::enable_if<std::is_same<Arg, skip_arg>::value, int>::type
+    typename std::enable_if<std::is_same<typename std::decay<Arg>::type, skip_arg>::value, int>::type
         read_if(sqlite3_stmt* stmt, int index, Arg& arg)
     {
         return SQLITE_OK; // skip this
     }
 
     template <typename Arg>
-    typename std::enable_if<!std::is_same<Arg, skip_arg>::value, int>::type
+    typename std::enable_if<!std::is_same<typename std::decay<Arg>::type, skip_arg>::value, int>::type
         read_if(sqlite3_stmt* stmt, int index, Arg& arg)
     {
         return read(stmt, index, arg);
@@ -149,14 +149,17 @@ public:
     int execute();
 
     template <typename... Args>
-    bool read(Args&... args);
+    bool read_row(Args&&... args);
+    bool next_row();
 
+    template <typename... Args>
+    int read_columns(Args&&... args) const;
     template <typename Arg, typename... Args>
-    int read_row(Arg& arg, Args&... args) const;
+    int read_next_columns(Arg&& arg, Args&&... args) const;
     template <typename Arg>
-    int read_row(Arg& arg) const;
+    int read_next_columns(Arg&& arg) const;
     template <typename Arg>
-    int read_row_at(int index, Arg& arg) const;
+    int read_column_at(int index, Arg&& arg) const;
 
     int read_text(int index, std::string& text) const;
     int read_blob(int index, std::vector<char>& value) const;
@@ -184,9 +187,10 @@ private:
 
     sqlite3_stmt* m_handle = nullptr;
     int m_bind_index = 0;
-    mutable int m_read_index = 0;
+    mutable int m_read_index = -1;
 
     int m_exec_status = SQLITE_OK;
+    bool m_exec_before_next_row = false;
 
     friend class database;
 };
@@ -230,11 +234,15 @@ int statement::bind_blob(int index, const Arg& value)
 }
 
 template <typename... Args>
-bool statement::read(Args&... args)
+bool statement::read_row(Args&&... args)
 {
+    static_assert(sizeof...(args) > 0,
+        "Read should be called with arguments. "
+        "Use 'next_row()' if you want to read columns separately.");
+
     m_read_index = -1;
 
-    auto code = read_row(args...);
+    const auto code = read_next_columns(args...);
     if (code != SQLITE_OK)
     {
         // stop execution
@@ -248,26 +256,33 @@ bool statement::read(Args&... args)
            (m_exec_status == SQLITE_DONE);
 }
 
+template <typename... Args>
+int statement::read_columns(Args&&... args) const
+{
+    m_read_index = -1;
+    return read_next_columns(args...);
+}
+
 template <typename Arg, typename... Args>
-int statement::read_row(Arg& arg, Args&... args) const
+int statement::read_next_columns(Arg&& arg, Args&&... args) const
 {
     ++m_read_index;
-    auto code = read_row_at(m_read_index, arg);
+    const auto code = read_column_at(m_read_index, arg);
 
     return (code == SQLITE_OK)
-        ? read_row(args...)
+        ? read_next_columns(args...)
         : code;
 }
 
 template <typename Arg>
-int statement::read_row(Arg& arg) const
+int statement::read_next_columns(Arg&& arg) const
 {
     ++m_read_index;
-    return read_row_at(m_read_index, arg);
+    return read_column_at(m_read_index, arg);
 }
 
 template <typename Arg>
-int statement::read_row_at(int index, Arg& arg) const
+int statement::read_column_at(int index, Arg&& arg) const
 {
     static_assert(!detail::is_void<Arg>::value,
         "You can't read void types. There's no information about their size. "

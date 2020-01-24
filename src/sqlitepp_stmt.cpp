@@ -153,6 +153,17 @@ int statement::get_argument_index(const char* name) const
     return sqlite3_bind_parameter_index(m_handle, name);
 }
 
+bool statement::next_row()
+{
+    if (!m_exec_before_next_row)
+    {
+        execute();
+    }
+
+    m_exec_before_next_row = false;
+    return (m_exec_status == SQLITE_ROW);
+}
+
 int statement::read_text(int index, std::string& text) const
 {
     return detail::read(m_handle, index, text);
@@ -181,6 +192,7 @@ const char* statement::get_column_name(int index) const
 int statement::execute()
 {
     m_exec_status = sqlite3_step(m_handle);
+    m_exec_before_next_row = true;
 
     return ((m_exec_status == SQLITE_ROW) ||
             (m_exec_status == SQLITE_DONE))
