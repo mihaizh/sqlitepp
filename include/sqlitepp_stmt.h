@@ -28,20 +28,20 @@ struct blob
 
 namespace detail
 {
-    int bind(sqlite3_stmt* stmt, int index, int32_t value) noexcept;
-    int bind(sqlite3_stmt* stmt, int index, int64_t value) noexcept;
-    int bind(sqlite3_stmt* stmt, int index, double value) noexcept;
-    int bind(sqlite3_stmt* stmt, int index, const char* value) noexcept;
-    int bind(sqlite3_stmt* stmt, int index, const std::string& value) noexcept;
-    int bind(sqlite3_stmt* stmt, int index, const std::vector<char>& value) noexcept;
-    int bind(sqlite3_stmt* stmt, int index, const void* src_ptr, size_t length) noexcept;
+    int bind(sqlite3_stmt* stmt, int index, int32_t value);
+    int bind(sqlite3_stmt* stmt, int index, int64_t value);
+    int bind(sqlite3_stmt* stmt, int index, double value);
+    int bind(sqlite3_stmt* stmt, int index, const char* value);
+    int bind(sqlite3_stmt* stmt, int index, const std::string& value);
+    int bind(sqlite3_stmt* stmt, int index, const std::vector<char>& value);
+    int bind(sqlite3_stmt* stmt, int index, const void* src_ptr, size_t length);
 
-    int read(sqlite3_stmt* stmt, int index, int32_t& value) noexcept;
-    int read(sqlite3_stmt* stmt, int index, int64_t& value) noexcept;
-    int read(sqlite3_stmt* stmt, int index, double& value) noexcept;
-    int read(sqlite3_stmt* stmt, int index, std::string& value) noexcept;
-    int read(sqlite3_stmt* stmt, int index, std::vector<char>& value) noexcept;
-    int read(sqlite3_stmt* stmt, int index, void* dst_ptr, size_t length) noexcept;
+    int read(sqlite3_stmt* stmt, int index, int32_t& value);
+    int read(sqlite3_stmt* stmt, int index, int64_t& value);
+    int read(sqlite3_stmt* stmt, int index, double& value);
+    int read(sqlite3_stmt* stmt, int index, std::string& value);
+    int read(sqlite3_stmt* stmt, int index, std::vector<char>& value);
+    int read(sqlite3_stmt* stmt, int index, void* dst_ptr, size_t length);
 
     template<class T>
     struct is_c_str
@@ -130,57 +130,57 @@ public:
     ~statement() noexcept;
 
     template <typename Arg, typename... Args>
-    int bind(const Arg& first, const Args&... args) noexcept;
+    int bind(const Arg& first, const Args&... args);
     template <typename Arg>
-    int bind(const Arg& last) noexcept;
+    int bind(const Arg& last);
 
     template <typename Arg>
-    int bind_at(int index, const Arg& arg) noexcept;
+    int bind_at(int index, const Arg& arg);
 
-    int bind_text(int index, const char* text) noexcept;
-    int bind_text(int index, const std::string& text) noexcept;
-    int bind_blob(int index, const std::vector<char>& value) noexcept;
-    int bind_blob(int index, const void* ptr, size_t length) noexcept;
+    int bind_text(int index, const char* text);
+    int bind_text(int index, const std::string& text);
+    int bind_blob(int index, const std::vector<char>& value);
+    int bind_blob(int index, const void* ptr, size_t length);
     template <typename Arg>
-    int bind_blob(int index, const Arg& value) noexcept;
+    int bind_blob(int index, const Arg& value);
 
-    int get_argument_index(const char* name) noexcept;
+    int get_argument_index(const char* name);
 
-    int execute() noexcept;
+    int execute();
 
     template <typename... Args>
-    bool read(Args&... args) noexcept;
+    bool read(Args&... args);
 
     template <typename Arg, typename... Args>
-    int read_row(Arg& arg, Args&... args) noexcept;
+    int read_row(Arg& arg, Args&... args);
     template <typename Arg>
-    int read_row(Arg& arg) noexcept;
+    int read_row(Arg& arg);
     template <typename Arg>
-    int read_row_at(int index, Arg& arg) noexcept;
+    int read_row_at(int index, Arg& arg);
 
-    int read_text(int index, std::string& text) noexcept;
-    int read_blob(int index, std::vector<char>& value) noexcept;
-    int read_blob(int index, void* ptr, size_t length) noexcept;
+    int read_text(int index, std::string& text);
+    int read_blob(int index, std::vector<char>& value);
+    int read_blob(int index, void* ptr, size_t length);
     template <typename Arg>
-    int read_blob(int index, Arg& value) noexcept;
+    int read_blob(int index, Arg& value);
 
-    int get_column_count() noexcept;
-    const char* get_column_name(int index) noexcept;
+    int get_column_count();
+    const char* get_column_name(int index);
 
-    int finalize() noexcept;
+    int finalize();
 
-    bool ok() const noexcept
+    bool ok() const
     {
         return m_handle != nullptr;
     }
 
-    int execution_status() const noexcept
+    int execution_status() const
     {
         return m_exec_status;
     }
 
 private:
-    statement() noexcept = default;
+    statement() = default;
 
     sqlite3_stmt* m_handle = nullptr;
     int m_bind_index = 0;
@@ -192,14 +192,14 @@ private:
 };
 
 template <typename Arg>
-int statement::bind(const Arg& last) noexcept
+int statement::bind(const Arg& last)
 {
     ++m_bind_index;
     return bind_at(m_bind_index, last);
 }
 
 template <typename Arg, typename... Args>
-int statement::bind(const Arg& first, const Args&... args) noexcept
+int statement::bind(const Arg& first, const Args&... args)
 {
     // increase index counter
     ++m_bind_index;
@@ -213,7 +213,7 @@ int statement::bind(const Arg& first, const Args&... args) noexcept
 }
 
 template <typename Arg>
-int statement::bind_at(int index, const Arg& arg) noexcept
+int statement::bind_at(int index, const Arg& arg)
 {
     static_assert(!detail::is_void<Arg>::value,
         "You can't bind void types. There's no information about their size. "
@@ -224,13 +224,13 @@ int statement::bind_at(int index, const Arg& arg) noexcept
 }
 
 template <typename Arg>
-int statement::bind_blob(int index, const Arg& value) noexcept
+int statement::bind_blob(int index, const Arg& value)
 {
     return detail::bind(m_handle, index, reinterpret_cast<const void*>(&value), sizeof(Arg));
 }
 
 template <typename... Args>
-bool statement::read(Args&... args) noexcept
+bool statement::read(Args&... args)
 {
     m_read_index = -1;
 
@@ -249,7 +249,7 @@ bool statement::read(Args&... args) noexcept
 }
 
 template <typename Arg, typename... Args>
-int statement::read_row(Arg& arg, Args&... args) noexcept
+int statement::read_row(Arg& arg, Args&... args)
 {
     ++m_read_index;
     auto code = read_row_at(m_read_index, arg);
@@ -260,14 +260,14 @@ int statement::read_row(Arg& arg, Args&... args) noexcept
 }
 
 template <typename Arg>
-int statement::read_row(Arg& arg) noexcept
+int statement::read_row(Arg& arg)
 {
     ++m_read_index;
     return read_row_at(m_read_index, arg);
 }
 
 template <typename Arg>
-int statement::read_row_at(int index, Arg& arg) noexcept
+int statement::read_row_at(int index, Arg& arg)
 {
     static_assert(!detail::is_void<Arg>::value,
         "You can't read void types. There's no information about their size. "
@@ -280,7 +280,7 @@ int statement::read_row_at(int index, Arg& arg) noexcept
 }
 
 template <typename Arg>
-int statement::read_blob(int index, Arg& value) noexcept
+int statement::read_blob(int index, Arg& value)
 {
     return detail::read(m_handle, index, reinterpret_cast<void*>(&value), sizeof(Arg));
 }

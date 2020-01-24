@@ -17,25 +17,25 @@ public:
     database() noexcept = default;
     database(const char* db);
     database(const std::string& db);
-    database(const char* db, int& result) noexcept;
-    database(const std::string& db, int& result) noexcept;
+    database(const char* db, int& result);
+    database(const std::string& db, int& result);
     database(const database&) = delete;
     database(database&&) noexcept;
     database& operator=(const database&) = delete;
     database& operator=(database&&) noexcept;
-    ~database() noexcept;
+    ~database();
 
-    int open(const char* db, int flags) noexcept;
-    int open(const std::string& db, int flags) noexcept;
-    int close() noexcept;
+    int open(const char* db, int flags);
+    int open(const std::string& db, int flags);
+    int close();
 
     template <typename... Args>
     statement prepare(const char* query, const Args&... args);
     statement prepare(const char* query);
     int execute(const char* query);
 
-    int toggle_extended_result_codes() noexcept;
-    bool is_using_extended_result_codes() const noexcept;
+    int toggle_extended_result_codes();
+    bool is_using_extended_result_codes() const;
 
 private:
     sqlite3* m_handle = nullptr;

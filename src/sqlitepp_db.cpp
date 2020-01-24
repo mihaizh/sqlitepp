@@ -13,12 +13,12 @@ database::database(const std::string& db)
     assert(open(db, SQLITE_OPEN_READWRITE) == SQLITE_OK);
 }
 
-database::database(const char* db, int& result) noexcept
+database::database(const char* db, int& result)
 {
     result = open(db, SQLITE_OPEN_READWRITE);
 }
 
-database::database(const std::string& db, int& result) noexcept
+database::database(const std::string& db, int& result)
 {
     result = open(db, SQLITE_OPEN_READWRITE);
 }
@@ -39,22 +39,22 @@ database& database::operator=(database&& other) noexcept
     return *this;
 }
 
-database::~database() noexcept
+database::~database()
 {
     close();
 }
 
-int database::open(const std::string& db, int flags) noexcept
+int database::open(const std::string& db, int flags)
 {
     return open(db.c_str(), flags);
 }
 
-int database::open(const char* db, int flags) noexcept
+int database::open(const char* db, int flags)
 {
     return sqlite3_open_v2(db, &m_handle, flags, nullptr);
 }
 
-int database::close() noexcept
+int database::close()
 {
     if (m_handle != nullptr)
     {
@@ -85,13 +85,13 @@ int database::execute(const char* query)
     return sqlite3_exec(m_handle, query, nullptr, nullptr, nullptr);
 }
 
-int database::toggle_extended_result_codes() noexcept
+int database::toggle_extended_result_codes()
 {
     m_extended_result_codes = !m_extended_result_codes;
     return sqlite3_extended_result_codes(m_handle, m_extended_result_codes ? 1 : 0);
 }
 
-bool database::is_using_extended_result_codes() const noexcept
+bool database::is_using_extended_result_codes() const
 {
     return m_extended_result_codes;
 }

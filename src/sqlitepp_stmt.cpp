@@ -5,42 +5,42 @@ namespace sqlitepp
 
 namespace detail
 {
-    int bind(sqlite3_stmt* stmt, int index, int32_t value) noexcept
+    int bind(sqlite3_stmt* stmt, int index, int32_t value)
     {
         return sqlite3_bind_int(stmt, index, value);
     }
 
-    int bind(sqlite3_stmt* stmt, int index, int64_t value) noexcept
+    int bind(sqlite3_stmt* stmt, int index, int64_t value)
     {
         return sqlite3_bind_int64(stmt, index, value);
     }
 
-    int bind(sqlite3_stmt* stmt, int index, double value) noexcept
+    int bind(sqlite3_stmt* stmt, int index, double value)
     {
         return sqlite3_bind_double(stmt, index, value);
     }
 
-    int bind(sqlite3_stmt* stmt, int index, const char* value) noexcept
+    int bind(sqlite3_stmt* stmt, int index, const char* value)
     {
         return sqlite3_bind_text(stmt, index, value, (int)strlen(value), SQLITE_STATIC);
     }
 
-    int bind(sqlite3_stmt* stmt, int index, const std::string& value) noexcept
+    int bind(sqlite3_stmt* stmt, int index, const std::string& value)
     {
         return sqlite3_bind_text(stmt, index, value.data(), (int)value.length(), SQLITE_STATIC);
     }
 
-    int bind(sqlite3_stmt* stmt, int index, const std::vector<char>& value) noexcept
+    int bind(sqlite3_stmt* stmt, int index, const std::vector<char>& value)
     {
         return sqlite3_bind_blob(stmt, index, value.data(), (int)value.size(), SQLITE_STATIC);
     }
 
-    int bind(sqlite3_stmt* stmt, int index, const void* src_ptr, size_t length) noexcept
+    int bind(sqlite3_stmt* stmt, int index, const void* src_ptr, size_t length)
     {
         return sqlite3_bind_blob(stmt, index, src_ptr, (int)length, SQLITE_STATIC);
     }
 
-    int read(sqlite3_stmt* stmt, int index, int32_t& value) noexcept
+    int read(sqlite3_stmt* stmt, int index, int32_t& value)
     {
         if (sqlite3_column_type(stmt, index) != SQLITE_INTEGER)
             return SQLITE_MISMATCH;
@@ -49,7 +49,7 @@ namespace detail
         return SQLITE_OK;
     }
 
-    int read(sqlite3_stmt* stmt, int index, int64_t& value) noexcept
+    int read(sqlite3_stmt* stmt, int index, int64_t& value)
     {
         if (sqlite3_column_type(stmt, index) != SQLITE_INTEGER)
             return SQLITE_MISMATCH;
@@ -58,7 +58,7 @@ namespace detail
         return SQLITE_OK;
     }
 
-    int read(sqlite3_stmt* stmt, int index, double& value) noexcept
+    int read(sqlite3_stmt* stmt, int index, double& value)
     {
         if (sqlite3_column_type(stmt, index) != SQLITE_FLOAT)
             return SQLITE_MISMATCH;
@@ -67,7 +67,7 @@ namespace detail
         return SQLITE_OK;
     }
 
-    int read(sqlite3_stmt* stmt, int index, std::string& value) noexcept
+    int read(sqlite3_stmt* stmt, int index, std::string& value)
     {
         if (sqlite3_column_type(stmt, index) != SQLITE_TEXT)
             return SQLITE_MISMATCH;
@@ -76,7 +76,7 @@ namespace detail
         return SQLITE_OK;
     }
 
-    int read(sqlite3_stmt* stmt, int index, std::vector<char>& value) noexcept
+    int read(sqlite3_stmt* stmt, int index, std::vector<char>& value)
     {
         if (sqlite3_column_type(stmt, index) != SQLITE_BLOB)
             return SQLITE_MISMATCH;
@@ -92,7 +92,7 @@ namespace detail
         return SQLITE_OK;
     }
 
-    int read(sqlite3_stmt* stmt, int index, void* dst_ptr, size_t length) noexcept
+    int read(sqlite3_stmt* stmt, int index, void* dst_ptr, size_t length)
     {
         if (sqlite3_column_type(stmt, index) != SQLITE_BLOB)
             return SQLITE_MISMATCH;
@@ -128,57 +128,57 @@ statement& statement::operator=(statement&& other) noexcept
     return *this;
 }
 
-int statement::bind_text(int index, const char* text) noexcept
+int statement::bind_text(int index, const char* text)
 {
     return detail::bind(m_handle, index, text);
 }
 
-int statement::bind_text(int index, const std::string& text) noexcept
+int statement::bind_text(int index, const std::string& text)
 {
     return detail::bind(m_handle, index, text);
 }
 
-int statement::bind_blob(int index, const std::vector<char>& blob) noexcept
+int statement::bind_blob(int index, const std::vector<char>& blob)
 {
     return detail::bind(m_handle, index, blob);
 }
 
-int statement::bind_blob(int index, const void* ptr, size_t length) noexcept
+int statement::bind_blob(int index, const void* ptr, size_t length)
 {
     return detail::bind(m_handle, index, ptr, length);
 }
 
-int statement::get_argument_index(const char* name) noexcept
+int statement::get_argument_index(const char* name)
 {
     return sqlite3_bind_parameter_index(m_handle, name);
 }
 
-int statement::read_text(int index, std::string& text) noexcept
+int statement::read_text(int index, std::string& text)
 {
     return detail::read(m_handle, index, text);
 }
 
-int statement::read_blob(int index, std::vector<char>& value) noexcept
+int statement::read_blob(int index, std::vector<char>& value)
 {
     return detail::read(m_handle, index, value);
 }
 
-int statement::read_blob(int index, void* ptr, size_t length) noexcept
+int statement::read_blob(int index, void* ptr, size_t length)
 {
     return detail::read(m_handle, index, ptr, length);
 }
 
-int statement::get_column_count() noexcept
+int statement::get_column_count()
 {
     return sqlite3_column_count(m_handle);
 }
 
-const char* statement::get_column_name(int index) noexcept
+const char* statement::get_column_name(int index)
 {
     return sqlite3_column_name(m_handle, index);
 }
 
-int statement::execute() noexcept
+int statement::execute()
 {
     m_exec_status = sqlite3_step(m_handle);
 
@@ -188,7 +188,7 @@ int statement::execute() noexcept
         : m_exec_status;
 }
 
-int statement::finalize() noexcept
+int statement::finalize()
 {
     int code = SQLITE_OK;
     if (m_handle != nullptr)
@@ -203,7 +203,7 @@ int statement::finalize() noexcept
     return code;
 }
 
-statement::~statement() noexcept
+statement::~statement()
 {
     finalize();
 }
